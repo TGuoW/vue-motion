@@ -4,7 +4,6 @@ import Motion from '../package/Motion/index'
 
 Vue.config.productionTip = false
 
-console.log(Motion)
 Vue.use(Motion)
 
 new Vue({
