@@ -3,7 +3,11 @@
     <img
       alt="Vue logo"
       src="./assets/logo.png">
-    <Motion msg="Welcome to Your Vue.js App"/>
+    <Motion
+      :default-style='{x: 10}'
+      :stylee='{x: 30}'>
+      <div>asd</div>
+    </Motion>
   </div>
 </template>
 
