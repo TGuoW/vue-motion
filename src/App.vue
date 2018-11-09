@@ -6,7 +6,10 @@
     <Motion
       :default-style='{x: 10}'
       :stylee='{x: 30}'>
-      <div>asd</div>
+      <template slot-scope="props">
+        <div :style="{'width': props.data.x + 'px'}">{{ props }}</div>
+      </template>
+
     </Motion>
   </div>
 </template>
