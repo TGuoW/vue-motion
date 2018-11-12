@@ -4,8 +4,8 @@
       alt="Vue logo"
       src="./assets/logo.png">
     <Motion
-      :default-style='{x: 10}'
-      :stylee='{x: 30}'>
+      :default-style="{x: 10}"
+      :stylee="{x: 30}">
       <template slot-scope="props">
         <div :style="{'width': props.data.x + 'px'}">{{ props }}</div>
       </template>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <slot :data='currentStyle'/>
+    <slot :data="currentStyle"/>
   </div>
 </template>
 
@@ -8,272 +8,243 @@
 import mapToZero from '../mapToZero';
 import stripStyle from '../stripStyle';
 import stepper from '../stepper';
-import now from 'performance-now';
-import raf from 'raf';
+import defaultNow from 'performance-now';
+import defaultRaf from 'raf';
 import shouldStopAnimation from '../shouldStopAnimation';
-import presets from '../presets'
-import { raf, now, isArray, isObject } from './utils'
 
-const isArray = Array.isArray.bind(Array)
-
-const msPerFrame = 1000 / 60
+const msPerFrame = 1000 / 60;
 
 export default {
+  name: 'Motion',
+  props: {
+    defaultStyle: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    stylee: {
+      type: Object,
+      default () {
+        return {}
+      }
+    }
+  },
   data () {
+    const { defaultStyle, stylee } = this
+    const currentStyle = defaultStyle || stripStyle(stylee);
+    const currentVelocity = mapToZero(currentStyle);
     return {
-      currentValues: null,
-      currentVelocities: null,
+      currentStyle,
+      currentVelocity,
+      lastIdealStyle: currentStyle,
+      lastIdealVelocity: currentVelocity,
+      unmounting: false,
+      wasAnimating: false,
+      animationID: null,
+      prevTime: 0,
+      accumulatedTime: 0,
+      unreadPropStyle: null,
+      realValues: {...this.stylee}
+    }
+  },
+  watch: {
+    stylee (val) {
+      if (this.unreadPropStyle != null) {
+        // previous props haven't had the chance to be set yet; set them here
+        this.clearUnreadPropStyle(this.unreadPropStyle);
+      }
+      this.unreadPropStyle = val
+      if (this.animationID == null) {
+        this.prevTime = defaultNow();
+        this.startAnimationIfNecessary();
+      }
     }
   },
 
-  props: {
-    value: Number,
-    values: [Object, Array],
-    tag: {
-      type: String,
-      default: 'span',
-    },
-    spring: {
-      type: [Object, String],
-      default: 'noWobble',
-    },
-  },
-
-  computed: {
-    springConfig () {
-      return typeof this.spring === 'string' ? presets[this.spring] : this.spring
-    },
-    realValues () {
-      return this.value != null ? { value: this.value } : this.values
-    },
-  },
-
-  render (h) {
-    return h(this.tag, [this.$scopedSlots.default(this.currentValues)])
-  },
-
-  watch: {
-    realValues (current, old) {
-      if (old !== current && !this.wasAnimating) {
-        this.prevTime = now()
-        this.accumulatedTime = 0
-        this.animate()
-      }
-    },
-  },
-
-  created () {
-    const current = this.defineInitialValues(this.realValues, null)
-
-    this.currentValues = current.values
-    this.currentVelocities = current.velocities
-  },
-
   mounted () {
-    this.prevTime = now()
-    this.accumulatedTime = 0
-
-    const ideal = this.defineInitialValues(this.currentValues, this.currentVelocities)
-
-    this.idealValues = ideal.values
-    this.idealVelocities = ideal.velocities
-
-    this.animate()
+    this.prevTime = defaultNow();
+    this.startAnimationIfNecessary();
   },
 
+  beforeDestroy () {
+    this.unmounting = true;
+    if (this.animationID != null) {
+      defaultRaf.cancel(this.animationID);
+      this.animationID = null;
+    }
+  },
+  // render: function (h) {
+  //   return h('div', [this.$scopedSlots.default({
+  //     text: 'sad'
+  //   })])
+  // },
   methods: {
-    defineInitialValues (values, velocities) {
-      const newValues = {}
-      const newVelocities = {}
+    clearUnreadPropStyle (destStyle) {
+      let dirty = false;
+      let {
+        currentStyle,
+        currentVelocity,
+        lastIdealStyle,
+        lastIdealVelocity,
+      } = this;
 
-      this.defineValues(values, velocities, newValues, newVelocities)
-
-      return { values: newValues, velocities: newVelocities }
-    },
-
-    defineValues (values, velocities, newValues, newVelocities) {
-      for (const key in values) {
-        // istanbul ignore if
-        if (!Object.prototype.hasOwnProperty.call(values, key)) continue
-
-        if (isArray(values[key]) || isObject(values[key])) {
-          newValues[key] = {}
-          newVelocities[key] = {}
-
-          this.defineValues(
-            values[key],
-            velocities && velocities[key],
-            newValues[key],
-            newVelocities[key]
-          )
-
-          continue
+      for (let key in destStyle) {
+        if (!Object.prototype.hasOwnProperty.call(destStyle, key)) {
+          continue;
         }
 
-        newValues[key] = values[key]
-        newVelocities[key] = velocities ? velocities[key] : 0
+        const styleValue = destStyle[key];
+        if (typeof styleValue === 'number') {
+          if (!dirty) {
+            dirty = true;
+            currentStyle = { ...currentStyle };
+            currentVelocity = { ...currentVelocity };
+            lastIdealStyle = { ...lastIdealStyle };
+            lastIdealVelocity = { ...lastIdealVelocity };
+          }
+
+          currentStyle[key] = styleValue;
+          currentVelocity[key] = 0;
+          lastIdealStyle[key] = styleValue;
+          lastIdealVelocity[key] = 0;
+        }
+      }
+
+      if (dirty) {
+        this.currentStyle = currentStyle
+        this.currentVelocity = currentVelocity
+        this.lastIdealStyle = lastIdealStyle
+        this.lastIdealVelocity = lastIdealVelocity
       }
     },
 
-    animate () {
-      this.animationId = raf(() => {
-        if (shouldStopAnimation(this.currentValues, this.realValues, this.currentVelocities)) {
-          if (this.wasAnimating) this.$emit('motion-end')
-
-          // reset everything for next animation
-          this.animationId = null
-          this.wasAnimating = false
-          return
+    startAnimationIfNecessary () {
+      // /* eslint-disable */
+      // debugger
+      if (this.unmounting || this.animationID != null) {
+        return;
+      }
+      // TODO: when config is {a: 10} and dest is {a: 10} do we raf once and
+      // call cb? No, otherwise accidental parent rerender causes cb trigger
+      this.animationID = defaultRaf(timestamp => {
+        // https://github.com/chenglou/react-motion/pull/420
+        // > if execution passes the conditional if (this.unmounting), then
+        // executes async defaultRaf and after that component unmounts and after
+        // that the callback of defaultRaf is called, then setState will be called
+        // on unmounted component.
+        if (this.unmounting) {
+          return;
         }
 
-        if (!this.wasAnimating) this.$emit('motion-start')
-        this.wasAnimating = true
+        // check if we need to animate in the first place
+        const propsStyle = this.realValues
+        if (
+          shouldStopAnimation(
+            this.currentStyle,
+            propsStyle,
+            this.currentVelocity,
+          )
+        ) {
+          // if (this.wasAnimating && this.props.onRest) {
+          //   this.props.onRest();
+          // }
 
-        // get time from last frame
-        const currentTime = now()
-        const timeDelta = currentTime - this.prevTime
-        this.prevTime = currentTime
-        this.accumulatedTime += timeDelta
+          // no need to cancel animationID here; shouldn't have any in flight
+          this.animationID = null;
+          this.wasAnimating = false;
+          this.accumulatedTime = 0;
+          return;
+        }
 
+        this.wasAnimating = true;
+
+        const currentTime = timestamp || defaultNow();
+        const timeDelta = currentTime - this.prevTime;
+        this.prevTime = currentTime;
+        this.accumulatedTime = this.accumulatedTime + timeDelta;
         // more than 10 frames? prolly switched browser tab. Restart
         if (this.accumulatedTime > msPerFrame * 10) {
-          this.accumulatedTime = 0
+          this.accumulatedTime = 0;
         }
 
         if (this.accumulatedTime === 0) {
           // no need to cancel animationID here; shouldn't have any in flight
-          this.animationID = null
-          this.$emit('motion-restart')
-          this.animate()
-          return
+          this.animationID = null;
+          this.startAnimationIfNecessary();
+          return;
         }
 
-        const currentFrameCompletion =
-          (this.accumulatedTime - Math.floor(this.accumulatedTime / msPerFrame) * msPerFrame) /
-          msPerFrame
-        const framesToCatchUp = Math.floor(this.accumulatedTime / msPerFrame)
-        const springConfig = this.springConfig
+        let currentFrameCompletion =
+          (this.accumulatedTime -
+            Math.floor(this.accumulatedTime / msPerFrame) * msPerFrame) /
+          msPerFrame;
+        const framesToCatchUp = Math.floor(this.accumulatedTime / msPerFrame);
 
-        this.animateValues({
-          framesToCatchUp,
-          currentFrameCompletion,
-          springConfig,
-          realValues: this.realValues,
-          currentValues: this.currentValues,
-          currentVelocities: this.currentVelocities,
-          idealValues: this.idealValues,
-          idealVelocities: this.idealVelocities,
-        })
+        let newLastIdealStyle = {};
+        let newLastIdealVelocity = {};
+        let newCurrentStyle = {};
+        let newCurrentVelocity = {};
 
-        // out of the update loop
-        this.animationID = null
-        // the amount we're looped over above
-        this.accumulatedTime -= framesToCatchUp * msPerFrame
-
-        // keep going!
-        this.animate()
-      })
-    },
-
-    animateValues ({
-      framesToCatchUp,
-      currentFrameCompletion,
-      springConfig,
-      realValues,
-      currentValues,
-      currentVelocities,
-      idealValues,
-      idealVelocities,
-    }) {
-      for (const key in realValues) {
-        // istanbul ignore if
-        if (!Object.prototype.hasOwnProperty.call(realValues, key)) continue
-
-        if (isArray(realValues[key]) || isObject(realValues[key])) {
-          // the value may have been added
-          if (!idealValues[key]) {
-            const ideal = this.defineInitialValues(this.realValues[key], null)
-            const current = this.defineInitialValues(this.realValues[key], null)
-            this.$set(idealValues, key, ideal.values)
-            this.$set(idealVelocities, key, ideal.velocities)
-            this.$set(currentValues, key, current.values)
-            this.$set(currentVelocities, key, current.velocities)
+        for (let key in propsStyle) {
+          if (!Object.prototype.hasOwnProperty.call(propsStyle, key)) {
+            continue;
           }
 
-          this.animateValues({
-            framesToCatchUp,
-            currentFrameCompletion,
-            springConfig,
-            realValues: realValues[key],
-            currentValues: currentValues[key],
-            currentVelocities: currentVelocities[key],
-            idealValues: idealValues[key],
-            idealVelocities: idealVelocities[key],
-          })
+          const styleValue = propsStyle[key];
+          if (typeof styleValue === 'number') {
+            newCurrentStyle[key] = styleValue;
+            newCurrentVelocity[key] = 0;
+            newLastIdealStyle[key] = styleValue;
+            newLastIdealVelocity[key] = 0;
+          } else {
+            let newLastIdealStyleValue = this.state.lastIdealStyle[key];
+            let newLastIdealVelocityValue = this.state.lastIdealVelocity[key];
+            for (let i = 0; i < framesToCatchUp; i++) {
+              [newLastIdealStyleValue, newLastIdealVelocityValue] = stepper(
+                msPerFrame / 1000,
+                newLastIdealStyleValue,
+                newLastIdealVelocityValue,
+                styleValue.val,
+                styleValue.stiffness,
+                styleValue.damping,
+                styleValue.precision,
+              );
+            }
+            const [nextIdealX, nextIdealV] = stepper(
+              msPerFrame / 1000,
+              newLastIdealStyleValue,
+              newLastIdealVelocityValue,
+              styleValue.val,
+              styleValue.stiffness,
+              styleValue.damping,
+              styleValue.precision,
+            );
 
-          // nothing to animate
-          continue
+            newCurrentStyle[key] =
+              newLastIdealStyleValue +
+              (nextIdealX - newLastIdealStyleValue) * currentFrameCompletion;
+            newCurrentVelocity[key] =
+              newLastIdealVelocityValue +
+              (nextIdealV - newLastIdealVelocityValue) * currentFrameCompletion;
+            newLastIdealStyle[key] = newLastIdealStyleValue;
+            newLastIdealVelocity[key] = newLastIdealVelocityValue;
+          }
         }
 
-        let newIdealValue = idealValues[key]
-        let newIdealVelocity = idealVelocities[key]
-        const value = realValues[key]
+        this.animationID = null;
+        // the amount we're looped over above
+        this.accumulatedTime -= framesToCatchUp * msPerFrame;
 
-        // iterate as if the animation took place
-        for (let i = 0; i < framesToCatchUp; i++) {
-          [newIdealValue, newIdealVelocity] = stepper(
-            msPerFrame / 1000,
-            newIdealValue,
-            newIdealVelocity,
-            value,
-            springConfig.stiffness,
-            springConfig.damping,
-            springConfig.precision
-          )
-        }
-
-        const [nextIdealValue, nextIdealVelocity] = stepper(
-          msPerFrame / 1000,
-          newIdealValue,
-          newIdealVelocity,
-          value,
-          springConfig.stiffness,
-          springConfig.damping,
-          springConfig.precision
-        )
-
-        currentValues[key] =
-          newIdealValue + (nextIdealValue - newIdealValue) * currentFrameCompletion
-        currentVelocities[key] =
-          newIdealVelocity + (nextIdealVelocity - newIdealVelocity) * currentFrameCompletion
-        idealValues[key] = newIdealValue
-        idealVelocities[key] = newIdealVelocity
-      }
-    },
-  },
-}
-
-function shouldStopAnimation (currentValues, values, currentVelocities) {
-  for (const key in values) {
-    // istanbul ignore if
-    if (!Object.prototype.hasOwnProperty.call(values, key)) continue
-
-    if (isArray(values[key]) || isObject(values[key])) {
-      if (!shouldStopAnimation(currentValues[key], values[key], currentVelocities[key])) {
-        return false
-      }
-      // skip the other checks
-      continue
+        this.currentStyle = newCurrentStyle
+        this.currentVelocity = newCurrentVelocity
+        this.lastIdealStyle = newLastIdealStyle
+        this.lastIdealVelocity = newLastIdealVelocity
+        this.unreadPropStyle = null;
+        this.startAnimationIfNecessary()
+      })
     }
-
-    if (currentVelocities[key] !== 0) return false
-
-    // stepper will have already taken care of rounding precision errors, so
-    // won't have such thing as 0.9999 !=== 1
-    if (currentValues[key] !== values[key]) return false
-  }
-
-  return true
+  },
 }
 </script>
 
