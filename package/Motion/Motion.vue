@@ -45,7 +45,6 @@ export default {
       prevTime: 0,
       accumulatedTime: 0,
       unreadPropStyle: null,
-      realValues: {...this.stylee}
     }
   },
   watch: {
@@ -138,7 +137,7 @@ export default {
         }
 
         // check if we need to animate in the first place
-        const propsStyle = this.realValues
+        const propsStyle = this.stylee
         if (
           shouldStopAnimation(
             this.currentStyle,
@@ -185,7 +184,6 @@ export default {
         let newLastIdealVelocity = {};
         let newCurrentStyle = {};
         let newCurrentVelocity = {};
-
         for (let key in propsStyle) {
           if (!Object.prototype.hasOwnProperty.call(propsStyle, key)) {
             continue;
@@ -198,8 +196,8 @@ export default {
             newLastIdealStyle[key] = styleValue;
             newLastIdealVelocity[key] = 0;
           } else {
-            let newLastIdealStyleValue = this.state.lastIdealStyle[key];
-            let newLastIdealVelocityValue = this.state.lastIdealVelocity[key];
+            let newLastIdealStyleValue = this.lastIdealStyle[key];
+            let newLastIdealVelocityValue = this.lastIdealVelocity[key];
             for (let i = 0; i < framesToCatchUp; i++) {
               [newLastIdealStyleValue, newLastIdealVelocityValue] = stepper(
                 msPerFrame / 1000,
@@ -220,6 +218,7 @@ export default {
               styleValue.damping,
               styleValue.precision,
             );
+            console.log(nextIdealX, nextIdealV)
 
             newCurrentStyle[key] =
               newLastIdealStyleValue +

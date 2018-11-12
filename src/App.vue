@@ -5,7 +5,7 @@
       src="./assets/logo.png">
     <Motion
       :default-style="{x: 10}"
-      :stylee="{x: 30}">
+      :stylee="{x: spring(30)}">
       <template slot-scope="props">
         <div :style="{'width': props.data.x + 'px'}">{{ props }}</div>
       </template>
@@ -15,9 +15,12 @@
 </template>
 
 <script>
-
+import spring from '../package/spring'
 export default {
   name: 'App',
+  methods: {
+    spring: spring
+  }
 }
 </script>
 
