@@ -23,7 +23,7 @@ export default {
         return {}
       }
     },
-    stylee: {
+    nowStyle: {
       type: Object,
       default () {
         return {}
@@ -31,8 +31,8 @@ export default {
     }
   },
   data () {
-    const { defaultStyle, stylee } = this
-    const currentStyle = defaultStyle || stripStyle(stylee);
+    const { defaultStyle, nowStyle } = this
+    const currentStyle = defaultStyle || stripStyle(nowStyle);
     const currentVelocity = mapToZero(currentStyle);
     return {
       currentStyle,
@@ -48,7 +48,7 @@ export default {
     }
   },
   watch: {
-    stylee (val) {
+    nowStyle (val) {
       if (this.unreadPropStyle != null) {
         // previous props haven't had the chance to be set yet; set them here
         this.clearUnreadPropStyle(this.unreadPropStyle);
@@ -137,7 +137,7 @@ export default {
         }
 
         // check if we need to animate in the first place
-        const propsStyle = this.stylee
+        const propsStyle = this.nowStyle
         if (
           shouldStopAnimation(
             this.currentStyle,

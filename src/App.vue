@@ -5,7 +5,7 @@
       src="./assets/logo.png">
     <Motion
       :default-style="{x: 10}"
-      :stylee="{x: spring(30)}">
+      :nowStyle="{x: spring(30)}">
       <template slot-scope="props">
         <div :style="{'width': props.data.x + 'px'}">{{ props }}</div>
       </template>
