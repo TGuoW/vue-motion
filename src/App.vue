@@ -3,6 +3,7 @@
     <img
       alt="Vue logo"
       src="./assets/logo.png">
+      <!-- <he/> -->
     <Motion
       :default-style="{x: 10}"
       :nowStyle="{x: spring(30)}">
@@ -15,9 +16,15 @@
 </template>
 
 <script>
+import he from './components/HelloWorld'
+import { Motion } from '../package/index.js'
 import spring from '../package/spring'
 export default {
   name: 'App',
+  components: {
+    he,
+    Motion
+  },
   methods: {
     spring: spring
   }

@@ -1,7 +1,9 @@
 import Motion from './Motion/Motion'
+import TransitionMotion from './TransitionMotion/TransitionMotion'
 
 const components = [
-  Motion
+  Motion,
+  TransitionMotion
 ];
 
 const install = function(Vue) {
@@ -11,5 +13,6 @@ const install = function(Vue) {
 
 export default {
   install,
-  Motion
+  Motion,
+  TransitionMotion
 }
