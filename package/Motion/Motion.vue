@@ -20,7 +20,7 @@ export default {
     defaultStyle: {
       type: Object,
       default () {
-        return {}
+        return null
       }
     },
     nowStyle: {

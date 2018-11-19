@@ -16,7 +16,8 @@
 </template>
 
 <script>
-import he from './components/demo7-water-ripples'
+// import he from './components/demo7-water-ripples'
+import he from './components/demo0-simple-transition'
 import { Motion, spring } from '../package/index.js'
 export default {
   name: 'App',
@@ -37,6 +38,11 @@ export default {
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+  }
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
   }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

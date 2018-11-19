@@ -6,8 +6,8 @@
       <template slot-scope="props">
         <div
           class="demo7"
-          @mousemove="handleMouseMove">
-          <!-- {{ props.data }} -->
+          @mousemove="handleMouseMove"
+          @touchmove="handleTouchMove">
           <div
             v-for="(item) in props.data"
             :key="item.key"
@@ -106,6 +106,7 @@ a {
     position: absolute;
     width: 100%;
     height: 100%;
+    overflow: hidden;
   }
 
   .demo7-ball {
@@ -113,6 +114,6 @@ a {
     height: 50px;
     border-radius: 99px;
     position: absolute;
-    border: 1px solid lightblue;
+    border: 1px solid rgb(172, 187, 192);
   }
 </style>
