@@ -218,7 +218,6 @@ export default {
               styleValue.damping,
               styleValue.precision,
             );
-            console.log(nextIdealX, nextIdealV)
 
             newCurrentStyle[key] =
               newLastIdealStyleValue +

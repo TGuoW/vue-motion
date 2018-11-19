@@ -190,29 +190,132 @@ function mergeAndSync(
 
 export default {
   props: {
-    willEnter: styleThatEntered => stripStyle(styleThatEntered.style),
+    willEnter: {
+      type: Function,
+      default: styleThatEntered => stripStyle(styleThatEntered.style)
+    },
     // recall: returning null makes the current unmounting TransitionStyle
     // disappear immediately
-    willLeave: () => null,
-    didLeave: () => {},
+    willLeave: {
+      type: Function,
+      default: () => null
+    },
+    didLeave: {
+      type: Function,
+      default: () => {}
+    },
+    styles: {
+      type: Function | Array,
+      default: () => {}
+    }
   },
   data () {
-      return {
-        unmounting: false,
-        animationID: null,
-        prevTime: 0,
-        accumulatedTime: 0,
-        unreadPropStyles: null
-      }
+    const {
+      defaultStyles,
+      styles,
+      willEnter,
+      willLeave,
+      didLeave,
+    } = this;
+    const destStyles =
+      typeof styles === 'function' ? styles(defaultStyles) : styles;
+    // this is special. for the first time around, we don't have a comparison
+    // between last (no last) and current merged props. we'll compute last so:
+    // say default is {a, b} and styles (dest style) is {b, c}, we'll
+    // fabricate last as {a, b}
+    let oldMergedPropsStyles
+    if (defaultStyles == null) {
+      oldMergedPropsStyles = destStyles;
+    } else {
+      oldMergedPropsStyles = defaultStyles.map(defaultStyleCell => {
+        // TODO: key search code
+        for (let i = 0; i < destStyles.length; i++) {
+          if (destStyles[i].key === defaultStyleCell.key) {
+            return destStyles[i];
+          }
+        }
+        return defaultStyleCell;
+      });
+    }
+    const oldCurrentStyles =
+      defaultStyles == null
+        ? destStyles.map(s => stripStyle(s.style))
+        : defaultStyles.map(s => stripStyle(s.style));
+    const oldCurrentVelocities =
+      defaultStyles == null
+        ? destStyles.map(s => mapToZero(s.style))
+        : defaultStyles.map(s => mapToZero(s.style));
+    const [
+      mergedPropsStyles,
+      currentStyles,
+      currentVelocities,
+      lastIdealStyles,
+      lastIdealVelocities,
+    ] = mergeAndSync(
+      // Because this is an old-style createReactClass component, Flow doesn't
+      // understand that the willEnter and willLeave props have default values
+      // and will always be present.
+      willEnter,
+      willLeave,
+      didLeave,
+      oldMergedPropsStyles,
+      destStyles,
+      oldCurrentStyles,
+      oldCurrentVelocities,
+      oldCurrentStyles, // oldLastIdealStyles really
+      oldCurrentVelocities, // oldLastIdealVelocities really
+    )
+
+    return {
+      unmounting: false,
+      animationID: null,
+      prevTime: 0,
+      accumulatedTime: 0,
+      unreadPropStyles: null,
+      currentStyles,
+      currentVelocities,
+      lastIdealStyles,
+      lastIdealVelocities,
+      mergedPropsStyles,
+    }
   },
   computed: {
-    hydratedStyles: rehydrateStyles(
-      this.mergedPropsStyles,
-      this.unreadPropStyles,
-      this.currentStyles,
-    )
+    hydratedStyles () {
+      if (this.mergedPropsStyles === undefined) return
+      return rehydrateStyles(
+        this.mergedPropsStyles,
+        this.unreadPropStyles,
+        this.currentStyles,
+      )
+    }
   },
+  watch: {
+    styles (val) {
+      if (this.unreadPropStyles) {
+        // previous props haven't had the chance to be set yet; set them here
+        this.clearUnreadPropStyle(this.unreadPropStyles);
+      }
 
+      const styles = val;
+      // console.log(styles)
+      if (typeof styles === 'function') {
+        this.unreadPropStyles = styles(
+          rehydrateStyles(
+            this.state.mergedPropsStyles,
+            this.unreadPropStyles,
+            this.state.lastIdealStyles,
+          ),
+        );
+      } else {
+        this.unreadPropStyles = styles;
+      }
+
+      if (this.animationID == null) {
+        this.prevTime = defaultNow();
+        this.startAnimationIfNecessary();
+      }
+    }
+  },
   mounted () {
     this.prevTime = defaultNow();
     this.startAnimationIfNecessary();
@@ -230,72 +333,6 @@ export default {
   // compare currentStyle with destVal it'll be 0 === 0 (no animation, stop).
   // In reality currentStyle should be 400
   methods: {
-    defaultState() {
-      const {
-        defaultStyles,
-        styles,
-        willEnter,
-        willLeave,
-        didLeave,
-      } = this;
-      const destStyles =
-        typeof styles === 'function' ? styles(defaultStyles) : styles;
-
-      // this is special. for the first time around, we don't have a comparison
-      // between last (no last) and current merged props. we'll compute last so:
-      // say default is {a, b} and styles (dest style) is {b, c}, we'll
-      // fabricate last as {a, b}
-      let oldMergedPropsStyles
-      if (defaultStyles == null) {
-        oldMergedPropsStyles = destStyles;
-      } else {
-        oldMergedPropsStyles = defaultStyles.map(defaultStyleCell => {
-          // TODO: key search code
-          for (let i = 0; i < destStyles.length; i++) {
-            if (destStyles[i].key === defaultStyleCell.key) {
-              return destStyles[i];
-            }
-          }
-          return defaultStyleCell;
-        });
-      }
-      const oldCurrentStyles =
-        defaultStyles == null
-          ? destStyles.map(s => stripStyle(s.style))
-          : defaultStyles.map(s => stripStyle(s.style));
-      const oldCurrentVelocities =
-        defaultStyles == null
-          ? destStyles.map(s => mapToZero(s.style))
-          : defaultStyles.map(s => mapToZero(s.style));
-      const [
-        mergedPropsStyles,
-        currentStyles,
-        currentVelocities,
-        lastIdealStyles,
-        lastIdealVelocities,
-      ] = mergeAndSync(
-        // Because this is an old-style createReactClass component, Flow doesn't
-        // understand that the willEnter and willLeave props have default values
-        // and will always be present.
-        willEnter,
-        willLeave,
-        didLeave,
-        oldMergedPropsStyles,
-        destStyles,
-        oldCurrentStyles,
-        oldCurrentVelocities,
-        oldCurrentStyles, // oldLastIdealStyles really
-        oldCurrentVelocities, // oldLastIdealVelocities really
-      )
-
-      return {
-        currentStyles,
-        currentVelocities,
-        lastIdealStyles,
-        lastIdealVelocities,
-        mergedPropsStyles,
-      };
-    },
     clearUnreadPropStyle (unreadPropStyles)  {
       let [
         mergedPropsStyles,
@@ -502,13 +539,11 @@ export default {
         // the amount we're looped over above
         this.accumulatedTime -= framesToCatchUp * msPerFrame;
 
-        this.setState({
-          currentStyles: newCurrentStyles,
-          currentVelocities: newCurrentVelocities,
-          lastIdealStyles: newLastIdealStyles,
-          lastIdealVelocities: newLastIdealVelocities,
-          mergedPropsStyles: newMergedPropsStyles,
-        });
+        this.currentStyles = newCurrentStyles
+        this.currentVelocities = newCurrentVelocities
+        this.lastIdealStyles = newLastIdealStyles
+        this.lastIdealVelocities = newLastIdealVelocities
+        this.mergedPropsStyles = newMergedPropsStyles
 
         this.unreadPropStyles = null;
 
@@ -516,33 +551,5 @@ export default {
       });
     }
   }
-  // after checking for unreadPropStyles != null, we manually go set the
-  // non-interpolating values (those that are a number, without a spring
-  // config)
-
-  // componentWillReceiveProps(props) {
-  //   if (this.unreadPropStyles) {
-  //     // previous props haven't had the chance to be set yet; set them here
-  //     this.clearUnreadPropStyle(this.unreadPropStyles);
-  //   }
-
-  //   const styles = props.styles;
-  //   if (typeof styles === 'function') {
-  //     this.unreadPropStyles = styles(
-  //       rehydrateStyles(
-  //         this.state.mergedPropsStyles,
-  //         this.unreadPropStyles,
-  //         this.state.lastIdealStyles,
-  //       ),
-  //     );
-  //   } else {
-  //     this.unreadPropStyles = styles;
-  //   }
-
-  //   if (this.animationID == null) {
-  //     this.prevTime = defaultNow();
-  //     this.startAnimationIfNecessary();
-  //   }
-  // }
 }
 </script>

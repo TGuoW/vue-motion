@@ -1,5 +1,6 @@
 import Motion from './Motion/Motion'
 import TransitionMotion from './TransitionMotion/TransitionMotion'
+import spring from './spring'
 
 const components = [
   Motion,
@@ -11,8 +12,9 @@ const install = function(Vue) {
   components.map(component => Vue.component(component.name, component));
 };
 
-export default {
+export {
   install,
+  spring,
   Motion,
   TransitionMotion
 }
