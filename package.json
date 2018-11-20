@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "lodash.range": "^3.2.0",
     "performance-now": "^2.1.0",
     "raf": "^3.4.1",
     "vue": "^2.5.17"
@@ -29,6 +30,15 @@
     ],
     "parserOptions": {
       "parser": "babel-eslint"
+    },
+    "rules": {
+      "array-bracket-spacing": ["error", "never"],
+      "comma-spacing": ["error", { "before": false, "after": true }],
+      "indent": ["error", 2],
+      "no-trailing-spaces": "error",
+      "semi": ["error", "never"],
+      "space-before-blocks": ["error", "always"],
+      "space-before-function-paren": ["error", "always"]
     }
   },
   "postcss": {

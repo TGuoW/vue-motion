@@ -21,23 +21,23 @@
 </template>
 
 <script>
-  import { spring, Motion } from '../../package/index.js'
-  export default {
-    components: {
-      Motion
-    },
-    data () {
-      return {
-        open: false
-      }
-    },
-    methods: {
-      spring,
-      handleMouseDown () {
-        this.open = !this.open
-      }
+import { spring, Motion } from '../../package/index.js'
+export default {
+  components: {
+    Motion
+  },
+  data () {
+    return {
+      open: false
+    }
+  },
+  methods: {
+    spring,
+    handleMouseDown () {
+      this.open = !this.open
     }
   }
+}
 </script>
 
 <style scoped>

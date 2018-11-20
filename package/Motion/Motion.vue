@@ -5,14 +5,14 @@
 </template>
 
 <script>
-import mapToZero from '../mapToZero';
-import stripStyle from '../stripStyle';
-import stepper from '../stepper';
-import defaultNow from 'performance-now';
-import defaultRaf from 'raf';
-import shouldStopAnimation from '../shouldStopAnimation';
+import mapToZero from '../mapToZero'
+import stripStyle from '../stripStyle'
+import stepper from '../stepper'
+import defaultNow from 'performance-now'
+import defaultRaf from 'raf'
+import shouldStopAnimation from '../shouldStopAnimation'
 
-const msPerFrame = 1000 / 60;
+const msPerFrame = 1000 / 60
 
 export default {
   name: 'Motion',
@@ -32,8 +32,8 @@ export default {
   },
   data () {
     const { defaultStyle, nowStyle } = this
-    const currentStyle = defaultStyle || stripStyle(nowStyle);
-    const currentVelocity = mapToZero(currentStyle);
+    const currentStyle = defaultStyle || stripStyle(nowStyle)
+    const currentVelocity = mapToZero(currentStyle)
     return {
       currentStyle,
       currentVelocity,
@@ -51,26 +51,26 @@ export default {
     nowStyle (val) {
       if (this.unreadPropStyle != null) {
         // previous props haven't had the chance to be set yet; set them here
-        this.clearUnreadPropStyle(this.unreadPropStyle);
+        this.clearUnreadPropStyle(this.unreadPropStyle)
       }
       this.unreadPropStyle = val
       if (this.animationID == null) {
-        this.prevTime = defaultNow();
-        this.startAnimationIfNecessary();
+        this.prevTime = defaultNow()
+        this.startAnimationIfNecessary()
       }
     }
   },
 
   mounted () {
-    this.prevTime = defaultNow();
-    this.startAnimationIfNecessary();
+    this.prevTime = defaultNow()
+    this.startAnimationIfNecessary()
   },
 
   beforeDestroy () {
-    this.unmounting = true;
+    this.unmounting = true
     if (this.animationID != null) {
-      defaultRaf.cancel(this.animationID);
-      this.animationID = null;
+      defaultRaf.cancel(this.animationID)
+      this.animationID = null
     }
   },
   // render: function (h) {
@@ -80,33 +80,33 @@ export default {
   // },
   methods: {
     clearUnreadPropStyle (destStyle) {
-      let dirty = false;
+      let dirty = false
       let {
         currentStyle,
         currentVelocity,
         lastIdealStyle,
         lastIdealVelocity,
-      } = this;
+      } = this
 
       for (let key in destStyle) {
         if (!Object.prototype.hasOwnProperty.call(destStyle, key)) {
-          continue;
+          continue
         }
 
-        const styleValue = destStyle[key];
+        const styleValue = destStyle[key]
         if (typeof styleValue === 'number') {
           if (!dirty) {
-            dirty = true;
-            currentStyle = { ...currentStyle };
-            currentVelocity = { ...currentVelocity };
-            lastIdealStyle = { ...lastIdealStyle };
-            lastIdealVelocity = { ...lastIdealVelocity };
+            dirty = true
+            currentStyle = { ...currentStyle }
+            currentVelocity = { ...currentVelocity }
+            lastIdealStyle = { ...lastIdealStyle }
+            lastIdealVelocity = { ...lastIdealVelocity }
           }
 
-          currentStyle[key] = styleValue;
-          currentVelocity[key] = 0;
-          lastIdealStyle[key] = styleValue;
-          lastIdealVelocity[key] = 0;
+          currentStyle[key] = styleValue
+          currentVelocity[key] = 0
+          lastIdealStyle[key] = styleValue
+          lastIdealVelocity[key] = 0
         }
       }
 
@@ -122,7 +122,7 @@ export default {
       // /* eslint-disable */
       // debugger
       if (this.unmounting || this.animationID != null) {
-        return;
+        return
       }
       // TODO: when config is {a: 10} and dest is {a: 10} do we raf once and
       // call cb? No, otherwise accidental parent rerender causes cb trigger
@@ -133,7 +133,7 @@ export default {
         // that the callback of defaultRaf is called, then setState will be called
         // on unmounted component.
         if (this.unmounting) {
-          return;
+          return
         }
 
         // check if we need to animate in the first place
@@ -150,54 +150,54 @@ export default {
           // }
 
           // no need to cancel animationID here; shouldn't have any in flight
-          this.animationID = null;
-          this.wasAnimating = false;
-          this.accumulatedTime = 0;
-          return;
+          this.animationID = null
+          this.wasAnimating = false
+          this.accumulatedTime = 0
+          return
         }
 
-        this.wasAnimating = true;
+        this.wasAnimating = true
 
-        const currentTime = timestamp || defaultNow();
-        const timeDelta = currentTime - this.prevTime;
-        this.prevTime = currentTime;
-        this.accumulatedTime = this.accumulatedTime + timeDelta;
+        const currentTime = timestamp || defaultNow()
+        const timeDelta = currentTime - this.prevTime
+        this.prevTime = currentTime
+        this.accumulatedTime = this.accumulatedTime + timeDelta
         // more than 10 frames? prolly switched browser tab. Restart
         if (this.accumulatedTime > msPerFrame * 10) {
-          this.accumulatedTime = 0;
+          this.accumulatedTime = 0
         }
 
         if (this.accumulatedTime === 0) {
           // no need to cancel animationID here; shouldn't have any in flight
-          this.animationID = null;
-          this.startAnimationIfNecessary();
-          return;
+          this.animationID = null
+          this.startAnimationIfNecessary()
+          return
         }
 
         let currentFrameCompletion =
           (this.accumulatedTime -
             Math.floor(this.accumulatedTime / msPerFrame) * msPerFrame) /
-          msPerFrame;
-        const framesToCatchUp = Math.floor(this.accumulatedTime / msPerFrame);
+          msPerFrame
+        const framesToCatchUp = Math.floor(this.accumulatedTime / msPerFrame)
 
-        let newLastIdealStyle = {};
-        let newLastIdealVelocity = {};
-        let newCurrentStyle = {};
-        let newCurrentVelocity = {};
+        let newLastIdealStyle = {}
+        let newLastIdealVelocity = {}
+        let newCurrentStyle = {}
+        let newCurrentVelocity = {}
         for (let key in propsStyle) {
           if (!Object.prototype.hasOwnProperty.call(propsStyle, key)) {
-            continue;
+            continue
           }
 
-          const styleValue = propsStyle[key];
+          const styleValue = propsStyle[key]
           if (typeof styleValue === 'number') {
-            newCurrentStyle[key] = styleValue;
-            newCurrentVelocity[key] = 0;
-            newLastIdealStyle[key] = styleValue;
-            newLastIdealVelocity[key] = 0;
+            newCurrentStyle[key] = styleValue
+            newCurrentVelocity[key] = 0
+            newLastIdealStyle[key] = styleValue
+            newLastIdealVelocity[key] = 0
           } else {
-            let newLastIdealStyleValue = this.lastIdealStyle[key];
-            let newLastIdealVelocityValue = this.lastIdealVelocity[key];
+            let newLastIdealStyleValue = this.lastIdealStyle[key]
+            let newLastIdealVelocityValue = this.lastIdealVelocity[key]
             for (let i = 0; i < framesToCatchUp; i++) {
               [newLastIdealStyleValue, newLastIdealVelocityValue] = stepper(
                 msPerFrame / 1000,
@@ -207,7 +207,7 @@ export default {
                 styleValue.stiffness,
                 styleValue.damping,
                 styleValue.precision,
-              );
+              )
             }
             const [nextIdealX, nextIdealV] = stepper(
               msPerFrame / 1000,
@@ -217,28 +217,28 @@ export default {
               styleValue.stiffness,
               styleValue.damping,
               styleValue.precision,
-            );
+            )
 
             newCurrentStyle[key] =
               newLastIdealStyleValue +
-              (nextIdealX - newLastIdealStyleValue) * currentFrameCompletion;
+              (nextIdealX - newLastIdealStyleValue) * currentFrameCompletion
             newCurrentVelocity[key] =
               newLastIdealVelocityValue +
-              (nextIdealV - newLastIdealVelocityValue) * currentFrameCompletion;
-            newLastIdealStyle[key] = newLastIdealStyleValue;
-            newLastIdealVelocity[key] = newLastIdealVelocityValue;
+              (nextIdealV - newLastIdealVelocityValue) * currentFrameCompletion
+            newLastIdealStyle[key] = newLastIdealStyleValue
+            newLastIdealVelocity[key] = newLastIdealVelocityValue
           }
         }
 
-        this.animationID = null;
+        this.animationID = null
         // the amount we're looped over above
-        this.accumulatedTime -= framesToCatchUp * msPerFrame;
+        this.accumulatedTime -= framesToCatchUp * msPerFrame
 
         this.currentStyle = newCurrentStyle
         this.currentVelocity = newCurrentVelocity
         this.lastIdealStyle = newLastIdealStyle
         this.lastIdealVelocity = newLastIdealVelocity
-        this.unreadPropStyle = null;
+        this.unreadPropStyle = null
         this.startAnimationIfNecessary()
       })
     }
