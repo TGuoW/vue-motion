@@ -18,7 +18,8 @@
 <script>
 // import he from './components/demo7-water-ripples'
 // import he from './components/demo0-simple-transition'
-import he from './components/demo2-draggable-balls'
+// import he from './components/demo2-draggable-balls'
+import he from './components/demo3-todomvc-list-transition'
 import { Motion, spring } from '../package/index.js'
 export default {
   name: 'App',
@@ -49,7 +50,10 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
+  margin: 0 auto;
+  min-width: 230px;
+  max-width: 550px;
   color: #2c3e50;
 }
 </style>
