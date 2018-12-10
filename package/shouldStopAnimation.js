@@ -1,26 +1,26 @@
 
-export default function shouldStopAnimation(
+export default function shouldStopAnimation (
   currentStyle,
   style,
   currentVelocity
 ) {
   for (let key in style) {
     if (!Object.prototype.hasOwnProperty.call(style, key)) {
-      continue;
+      continue
     }
 
     if (currentVelocity[key] !== 0) {
-      return false;
+      return false
     }
 
     const styleValue =
-      typeof style[key] === 'number' ? style[key] : style[key].val;
+      typeof style[key] === 'number' ? style[key] : style[key].val
     // stepper will have already taken care of rounding precision errors, so
     // won't have such thing as 0.9999 !=== 1
     if (currentStyle[key] !== styleValue) {
-      return false;
+      return false
     }
   }
 
-  return true;
+  return true
 }
