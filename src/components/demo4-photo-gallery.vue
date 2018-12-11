@@ -21,7 +21,7 @@
               :now-style="item">
               <template slot-scope="p">
                 <img
-                  :src="require(`../../src/assets/images/${i}.jpg`)"
+                  :src="require(`../../src/assets/images/demo4/${i}.jpg`)"
                   :style="{
                     left: p.data.left + 'px',
                     height: p.data.height + 'px',
