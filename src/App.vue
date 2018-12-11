@@ -20,7 +20,8 @@
 // import he from './components/demo0-simple-transition'
 // import he from './components/demo2-draggable-balls'
 // import he from './components/demo3-todomvc-list-transition'
-import he from './components/test'
+// import he from './components/test'
+import he from './components/demo4-photo-gallery'
 import { Motion, spring } from '../package/index.js'
 export default {
   name: 'App',
