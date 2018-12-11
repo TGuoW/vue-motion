@@ -1,40 +1,12 @@
 <template>
   <div id="app">
-    <!-- <img
-      alt="Vue logo"
-      src="./assets/logo.png"> -->
-    <he :p="'ad'"/>
-    <!-- <Motion
-      :default-style="{x: 10}"
-      :now-style="{x: spring(30)}">
-      <template slot-scope="props">
-        <div :style="{'width': props.data.x + 'px'}">{{ props }}</div>
-      </template>
-
-    </Motion> -->
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <router-view/>
   </div>
 </template>
-
-<script>
-// import he from './components/demo7-water-ripples'
-// import he from './components/demo0-simple-transition'
-// import he from './components/demo2-draggable-balls'
-// import he from './components/demo3-todomvc-list-transition'
-// import he from './components/test'
-// import he from './components/demo4-photo-gallery'
-import he from './components/demo1-chat-heads'
-import { Motion, spring } from '../package/index.js'
-export default {
-  name: 'App',
-  components: {
-    he,
-    Motion
-  },
-  methods: {
-    spring: spring
-  }
-}
-</script>
 
 <style>
   * {
