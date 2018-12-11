@@ -1,4 +1,4 @@
-import persets from './persets'
+import persets from './presets'
 
 const defaultConfig = {
   ...persets.noWobble,

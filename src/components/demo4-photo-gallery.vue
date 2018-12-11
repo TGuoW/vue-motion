@@ -3,20 +3,31 @@
     <div>Scroll Me</div>
     <button @click="clickHandler('')">Previous</button>
     <input
-      type="range"
       :min="0"
       :max="photos.length - 1"
       :value="currPhoto"
-      @change="handleChange" />
+      type="range"
+      @change="handleChange" >
     <button @click="clickHandler('show-next')">Next</button>
-    <div className="demo4">
-      <Motion :nowStyle="{height: spring(photos[currPhoto][1]), width: spring(photos[currPhoto][0])}">
+    <div class="demo4">
+      <Motion :now-style="{height: spring(photos[currPhoto][1]), width: spring(photos[currPhoto][0])}">
         <template slot-scope="props">
-          <div className="demo4-inner" :style="{height: props.data.height + 'px', width: props.data.width + 'px'}">
-            <Motion v-for="(item, i) in configs" :key="i" :nowStyle="item.style">
+          <div
+            :style="{height: props.data.height + 'px', width: props.data.width + 'px'}"
+            class="demo4-inner">
+            <Motion
+              v-for="(item, i) in configs"
+              :key="i"
+              :now-style="item">
               <template slot-scope="p">
-                {{p.data}}
-                <img className="demo4-photo" :src="require(`../../src/assets/images/${i}.jpg`)" :style="p.data" />
+                <img
+                  :src="require(`../../src/assets/images/${i}.jpg`)"
+                  :style="{
+                    left: p.data.left + 'px',
+                    height: p.data.height + 'px',
+                    width: p.data.width + 'px'
+                  }"
+                  class="demo4-photo" >
               </template>
             </Motion>
           </div>
@@ -41,38 +52,47 @@ export default {
       configs: []
     }
   },
+  watch: {
+    currPhoto () {
+      this.changePhoto()
+    }
+  },
   mounted () {
-    const {photos, currPhoto} = this
-    const [currWidth, currHeight] = photos[currPhoto]
-
-    const widths = photos.map(([origW, origH]) => currHeight / origH * origW)
-
-    const leftStartCoords = widths
-      .slice(0, currPhoto)
-      .reduce((sum, width) => sum - width, 0)
-
-    photos.reduce((prevLeft, [origW, origH], i) => {
-      this.configs.push({
-        left: spring(prevLeft, springSettings),
-        height: spring(currHeight, springSettings),
-        width: spring(widths[i], springSettings),
-      });
-      return prevLeft + widths[i];
-    }, leftStartCoords);
+    this.changePhoto()
   },
   methods: {
     spring,
     clickHandler (btn) {
-      let photoIndex = btn === NEXT ? this.currPhoto+1 : this.currPhoto-1;
+      let photoIndex = btn === NEXT ? this.currPhoto+1 : this.currPhoto-1
 
-      photoIndex = photoIndex >= 0 ? photoIndex : this.photos.length - 1;
-      photoIndex = photoIndex >= this.photos.length ? 0 : photoIndex;
+      photoIndex = photoIndex >= 0 ? photoIndex : this.photos.length - 1
+      photoIndex = photoIndex >= this.photos.length ? 0 : photoIndex
       this.currPhoto = photoIndex
     },
     handleChange (e) {
       this.currPhoto = e.target.value
+    },
+    changePhoto () {
+      const {photos, currPhoto} = this
+      const currHeight = photos[currPhoto][1]
+
+      const widths = photos.map(([origW, origH]) => currHeight / origH * origW)
+
+      const leftStartCoords = widths
+        .slice(0, currPhoto)
+        .reduce((sum, width) => sum - width, 0)
+      this.configs = []
+      // eslint-disable-next-line
+      photos.reduce((prevLeft, [origW, origH], i) => {
+        this.configs.push({
+          left: spring(prevLeft, springSettings),
+          height: spring(currHeight, springSettings),
+          width: spring(widths[i], springSettings),
+        })
+        return prevLeft + widths[i]
+      }, leftStartCoords)
     }
-  }
+  },
 }
 </script>
 
