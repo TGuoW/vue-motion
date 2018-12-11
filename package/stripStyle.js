@@ -1,10 +1,10 @@
 export default function stripStyle (style) {
-  let ret = {};
+  let ret = {}
   for (const key in style) {
     if (!Object.prototype.hasOwnProperty.call(style, key)) {
-      continue;
+      continue
     }
-    ret[key] = typeof style[key] === 'number' ? style[key] : style[key].val;
+    ret[key] = typeof style[key] === 'number' ? style[key] : style[key].val
   }
-  return ret;
+  return ret
 }

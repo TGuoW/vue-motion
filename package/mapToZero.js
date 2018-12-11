@@ -1,9 +1,9 @@
 export default function mapToZero (obj) {
-  let ret = {};
+  let ret = {}
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      ret[key] = 0;
+      ret[key] = 0
     }
   }
-  return ret;
+  return ret
 }

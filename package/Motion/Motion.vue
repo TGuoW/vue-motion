@@ -73,11 +73,6 @@ export default {
       this.animationID = null
     }
   },
-  // render: function (h) {
-  //   return h('div', [this.$scopedSlots.default({
-  //     text: 'sad'
-  //   })])
-  // },
   methods: {
     clearUnreadPropStyle (destStyle) {
       let dirty = false

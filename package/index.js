@@ -1,7 +1,7 @@
 import Motion from './Motion/Motion'
 import TransitionMotion from './TransitionMotion/TransitionMotion'
 import spring from './spring'
-import presets from './persets'
+import presets from './presets'
 
 const components = [
   Motion,

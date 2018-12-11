@@ -1,6 +1,6 @@
 let reusedTuple = [0, 0]
 
-export default function stepper(
+export default function stepper (
   secondPerFrame,
   x,
   v,
