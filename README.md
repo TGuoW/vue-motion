@@ -1,5 +1,6 @@
 # vue-motion
 一个vue的动画库，源自react-motion
+文档：后面再补
 
 ## Project setup
 ```
