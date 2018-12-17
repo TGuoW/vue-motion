@@ -8,6 +8,11 @@
   </div>
 </template>
 
+<script>
+export default {
+}
+</script>
+
 <style>
   * {
     padding: 0;
@@ -32,4 +37,20 @@
     max-width: 550px; */
     color: #2c3e50;
   }
+  .test {
+    height: 100px;
+    width: 100px;
+    background: #000;
+  }
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
 </style>

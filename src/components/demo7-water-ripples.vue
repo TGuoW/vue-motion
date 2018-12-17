@@ -9,7 +9,7 @@
           @mousemove="handleMouseMove"
           @touchmove="handleTouchMove">
           <div
-            v-for="(item) in props.data"
+            v-for="(item) in props"
             :key="item.key"
             :style="{
               opacity: item.style.opacity,

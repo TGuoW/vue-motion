@@ -1,4 +1,4 @@
-import StaggeredMotion from './StaggeredMotion.vue'
+import StaggeredMotion from './StaggeredMotion.js'
 
 /* istanbul ignore next */
 StaggeredMotion.install = function (Vue) {

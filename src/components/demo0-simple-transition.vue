@@ -11,7 +11,7 @@
         <div class="demo0">
           <div
             :style="{
-              transform: `translate3d(${props.data.x}px, 0, 0)`
+              transform: `translate3d(${props.x}px, 0, 0)`
             }"
             class="demo0-block"/>
         </div>

@@ -5,7 +5,6 @@
 </template>
 
 <script>
-import $ from 'jquery'
 export default {
   props: {
     p: {
@@ -16,7 +15,6 @@ export default {
     }
   },
   mounted () {
-    console.log($('.i'))
   }
 }
 </script>

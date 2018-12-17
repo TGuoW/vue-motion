@@ -1,4 +1,4 @@
-import TransitionMotion from './TransitionMotion.vue'
+import TransitionMotion from './TransitionMotion.js'
 
 /* istanbul ignore next */
 TransitionMotion.install = function (Vue) {

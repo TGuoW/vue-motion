@@ -11,10 +11,10 @@
             <div
               :style="{
                 backgroundColor: allColors[key],
-                WebkitTransform: `translate3d(${props.data.translateX}px, ${props.data.translateY}px, 0) scale(${props.data.scale})`,
-                transform: `translate3d(${props.data.translateX}px, ${props.data.translateY}px, 0) scale(${props.data.scale})`,
+                WebkitTransform: `translate3d(${props.translateX}px, ${props.translateY}px, 0) scale(${props.scale})`,
+                transform: `translate3d(${props.translateX}px, ${props.translateY}px, 0) scale(${props.scale})`,
                 zIndex: key === lastPress ? 99 : order.indexOf(key),
-                boxShadow: `${props.data.boxShadow}px 5px 5px rgba(0,0,0,0.5)`,
+                boxShadow: `${props.boxShadow}px 5px 5px rgba(0,0,0,0.5)`,
               }"
               class="demo2-ball"
               @mousedown="handleMouseDown(key, key === lastPress && isPressed ? mouseXY : layout[key], $event)"/>

@@ -1,4 +1,4 @@
-import Motion from './Motion.vue'
+import Motion from './Motion.js'
 
 /* istanbul ignore next */
 Motion.install = function (Vue) {

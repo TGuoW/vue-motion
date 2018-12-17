@@ -5,13 +5,13 @@
     <template slot-scope="props">
       <div class="demo1">
         <div
-          v-for="(item, i) in props.data"
+          v-for="(item, i) in props"
           :key="i"
           :class="`demo1-ball ball-${i}`"
           :style="{
-            WebkitTransform: `translate3d(${props.data[i].x - 25}px, ${props.data[i].y - 25}px, 0)`,
-            transform: `translate3d(${props.data[i].x - 25}px, ${props.data[i].y - 25}px, 0)`,
-            zIndex: props.data.length - i,
+            WebkitTransform: `translate3d(${props[i].x - 25}px, ${props[i].y - 25}px, 0)`,
+            transform: `translate3d(${props[i].x - 25}px, ${props[i].y - 25}px, 0)`,
+            zIndex: props.length - i,
         }"/>
       </div>
     </template>

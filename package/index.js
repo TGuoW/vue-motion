@@ -12,7 +12,6 @@ const components = [
 
 const install = function (Vue) {
   if (install.installed) return
-  console.log(components[1].name)
   components.map(component => Vue.component(component.name, component))
 }
 

@@ -272,6 +272,9 @@ export default {
         this.startAnimationIfNecessary()
       }
     }
-  }
+  },
+  render () {
+    return this.$scopedSlots.default(this.currentStyle)[0]
+  },
 }
 </script>

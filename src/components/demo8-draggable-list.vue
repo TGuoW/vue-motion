@@ -9,14 +9,14 @@
           <template slot-scope="props">
             <div
               :style="{
-                boxShadow: `rgba(0, 0, 0, 0.2) 0px ${props.data.shadow}px ${2 * props.data.shadow}px 0px`,
-                transform: `translate3d(0, ${props.data.y}px, 0) scale(${props.data.scale})`,
-                WebkitTransform: `translate3d(0, ${props.data.y}px, 0) scale(${props.data.scale})`,
+                boxShadow: `rgba(0, 0, 0, 0.2) 0px ${props.shadow}px ${2 * props.shadow}px 0px`,
+                transform: `translate3d(0, ${props.y}px, 0) scale(${props.scale})`,
+                WebkitTransform: `translate3d(0, ${props.y}px, 0) scale(${props.scale})`,
                 zIndex: i === originalPosOfLastPressed ? 99 : i,
               }"
               class="demo8-item"
-              @mousedown="handleMouseDown(i, props.data.y, $event)"
-              @touchstart="handleTouchStart(i, props.data.y, $event)">
+              @mousedown="handleMouseDown(i, props.y, $event)"
+              @touchstart="handleTouchStart(i, props.y, $event)">
               {{ order.indexOf(i) + 1 }}
             </div>
           </template>

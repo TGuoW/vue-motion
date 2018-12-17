@@ -27,7 +27,7 @@
         <template slot-scope="props">
           <ul class="todo-list">
             <li
-              v-for="(item, index) in props.data"
+              v-for="(item, index) in props"
               :key="index"
               :style="{
                 opacity: item.style.opacity,
@@ -394,7 +394,10 @@ input[type="checkbox"] {
 
 .todoapp {
   background: #fff;
-  margin: 130px 0 40px 0;
+  /* margin: 130px 0 40px 0; */
+  margin: 0 auto;
+      min-width: 230px;
+    max-width: 550px;
   position: relative;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
               0 25px 50px 0 rgba(0, 0, 0, 0.1);

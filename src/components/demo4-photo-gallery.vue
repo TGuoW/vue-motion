@@ -13,7 +13,7 @@
       <Motion :now-style="{height: spring(photos[currPhoto][1]), width: spring(photos[currPhoto][0])}">
         <template slot-scope="props">
           <div
-            :style="{height: props.data.height + 'px', width: props.data.width + 'px'}"
+            :style="{height: props.height + 'px', width: props.width + 'px'}"
             class="demo4-inner">
             <Motion
               v-for="(item, i) in configs"
@@ -23,9 +23,9 @@
                 <img
                   :src="require(`../../src/assets/images/demo4/${i}.jpg`)"
                   :style="{
-                    left: p.data.left + 'px',
-                    height: p.data.height + 'px',
-                    width: p.data.width + 'px'
+                    left: p.left + 'px',
+                    height: p.height + 'px',
+                    width: p.width + 'px'
                   }"
                   class="demo4-photo" >
               </template>
