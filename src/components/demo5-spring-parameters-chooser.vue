@@ -2,26 +2,33 @@
   <div class="demo5">
     <div
       v-for="(item, index) in grid"
-      :style="cellStyle"
+      :style="cellStyle(item.i, item.j)"
       :key="index"
       class="demo5-cell">
       <input
         :min="0"
         :max="300"
-        :value="stiffness"
+        :value="stiffness(item.i)"
         type="range"
-        @onMouseDown="handleMouseDownInput.bind(null, 'stiffness', i)"
-        @onChange="handleChange.bind(null,'stiffness', i)">
+        @onMouseDown="handleMouseDownInput.bind(null, 'stiffness', item.i)"
+        @onChange="handleChange.bind(null,'stiffness', item.i)">
       <input
         :min="0"
         :max="40"
-        :value="damping"
+        :value="damping(item.j)"
         type="range"
-        @onMouseDown="handleMouseDownInput.bind(null,'damping', j)"
-        @onChange="handleChange.bind(null,'damping', j)" >
-      <Motion :now-style="motionStyle">
+        @onMouseDown="handleMouseDownInput.bind(null,'damping', item.j)"
+        @onChange="handleChange.bind(null,'damping', item.j)" >
+      <Motion :now-style="motionStyle(item.i, item.j)">
         <template slot-scope="props">
-          <div/>
+          <div
+            :style="{
+              transform: `translate3d(${props.x}px, ${props.y}px, 0)`,
+              WebkitTransform: `translate3d(${props.x}px, ${props.y}px, 0)`,
+            }"
+            :class="'demo5-ball ' + lastPressed[0] === item.i && lastPressed[1] === j
+              ? 'demo5-ball-active'
+              : ''"/>
         </template>
       </Motion>
     </div>
@@ -30,6 +37,11 @@
 
 
 <script>
+import { spring, Motion } from '../../package/index.js'
+import range from 'lodash.range';
+const gridWidth = 150;
+const gridHeight = 150;
+const grid = range(4).map(() => range(6));
 export default {
   data () {
     return {
@@ -39,7 +51,11 @@ export default {
       firstConfig: [60, 5],
       slider: {dragged: null, num: 0},
       lastPressed: [0, 0],
+      grid: grid
     }
+  },
+  computed: {
+
   },
   mounted () {
     window.addEventListener('mousemove', this.handleMouseMove)
@@ -47,42 +63,66 @@ export default {
     window.addEventListener('mouseup', this.handleMouseUp)
     window.addEventListener('touchend', this.handleMouseUp)
   },
-  handleTouchStart (pos, press, e) {
-    this.handleMouseDown(pos, press, e.touches[0])
-  },
-  handleMouseDown (pos, [pressX, pressY], {pageX, pageY}) {
-    this.delta = [pageX - pressX, pageY - pressY]
-    this.mouse = [pressX, pressY]
-    this.isPressed = true
-    this.lastPressed = pos
-  },
-  handleTouchMove (e) {
-    if (this.state.isPressed) {
-      e.preventDefault()
+  methods: {
+    handleTouchStart (pos, press, e) {
+      this.handleMouseDown(pos, press, e.touches[0])
+    },
+    handleMouseDown (pos, [pressX, pressY], {pageX, pageY}) {
+      this.delta = [pageX - pressX, pageY - pressY]
+      this.mouse = [pressX, pressY]
+      this.isPressed = true
+      this.lastPressed = pos
+    },
+    handleTouchMove (e) {
+      if (this.state.isPressed) {
+        e.preventDefault()
+      }
+      this.handleMouseMove(e.touches[0])
+    },
+    handleMouseMove ({pageX, pageY}) {
+      const {isPressed, delta: [dx, dy]} = this
+      if (isPressed) {
+        this.mouse = [pageX - dx, pageY - dy]
+      }
+    },
+    handleMouseUp () {
+      this.isPressed= false
+      this.delta = [0, 0]
+      this.slider = {dragged: null, num: 0}
+    },
+    handleChange (constant, num, {target}) {
+      const {firstConfig: [s, d]} = this
+      if (constant === 'stiffness') {
+        this.firstConfig = [target.value - num * 30, d]
+      } else {
+        this.firstConfig = [s, target.value - num * 2]
+      }
+    },
+    handleMouseDownInput (constant, num) {
+      this.slider = {dragged: constant, num: num}
+    },
+    cellStyle (i, j) {
+      return {
+        top: gridHeight * i,
+        left: gridWidth * j,
+        width: gridWidth,
+        height: gridHeight,
+      }
+    },
+    stiffness (i) {
+      return this.firstConfig.s0 + i * 30
+    },
+    damping (j) {
+      return this.firstConfig.d0 + j * 30
+    },
+    motionStyle (i, j) {
+      return this.isPressed
+        ? {x: mouse[0], y: mouse[1]}
+        : {
+            x: spring(gridWidth / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
+            y: spring(gridHeight / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
+          };
     }
-    this.handleMouseMove(e.touches[0])
-  },
-  handleMouseMove ({pageX, pageY}) {
-    const {isPressed, delta: [dx, dy]} = this
-    if (isPressed) {
-      this.mouse = [pageX - dx, pageY - dy]
-    }
-  },
-  handleMouseUp () {
-    this.isPressed= false
-    this.delta = [0, 0]
-    this.slider = {dragged: null, num: 0}
-  },
-  handleChange (constant, num, {target}) {
-    const {firstConfig: [s, d]} = this
-    if (constant === 'stiffness') {
-      this.firstConfig = [target.value - num * 30, d]
-    } else {
-      this.firstConfig = [s, target.value - num * 2]
-    }
-  },
-  handleMouseDownInput (constant, num) {
-    this.slider = {dragged: constant, num: num}
   }
 }
 </script>

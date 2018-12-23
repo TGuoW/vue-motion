@@ -37,6 +37,11 @@ export default new Router({
           component: () => import(/* webpackChunkName: "demo4" */ './components/demo4-photo-gallery.vue')
         },
         {
+          path: 'demo5',
+          name: 'demo5',
+          component: () => import(/* webpackChunkName: "demo5" */ './components/demo5-spring-parameters-chooser.vue')
+        },
+        {
           path: 'demo7',
           name: 'demo7',
           component: () => import(/* webpackChunkName: "demo7" */ './components/demo7-water-ripples.vue')
