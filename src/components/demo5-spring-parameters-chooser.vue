@@ -1,48 +1,95 @@
 <template>
   <div class="demo5">
-    <div
-      v-for="(item, index) in grid"
-      :style="cellStyle(item.i, item.j)"
-      :key="index"
-      class="demo5-cell">
-      <input
-        :min="0"
-        :max="300"
-        :value="stiffness(item.i)"
-        type="range"
-        @onMouseDown="handleMouseDownInput.bind(null, 'stiffness', item.i)"
-        @onChange="handleChange.bind(null,'stiffness', item.i)">
-      <input
-        :min="0"
-        :max="40"
-        :value="damping(item.j)"
-        type="range"
-        @onMouseDown="handleMouseDownInput.bind(null,'damping', item.j)"
-        @onChange="handleChange.bind(null,'damping', item.j)" >
-      <Motion :now-style="motionStyle(item.i, item.j)">
-        <template slot-scope="props">
-          <div
-            :style="{
-              transform: `translate3d(${props.x}px, ${props.y}px, 0)`,
-              WebkitTransform: `translate3d(${props.x}px, ${props.y}px, 0)`,
-            }"
-            :class="'demo5-ball ' + lastPressed[0] === item.i && lastPressed[1] === j
-              ? 'demo5-ball-active'
-              : ''"/>
-        </template>
-      </Motion>
-    </div>
+    <template
+      v-for="(item, i) in grid">
+      <div
+        v-for="(ele, j) in item"
+        :key="j + 100 * i"
+        :style="cellStyle(i, j)"
+        class="demo5-cell">
+        <input
+          :min="0"
+          :max="300"
+          :value="stiffness(i)"
+          type="range"
+          @mousedown="handleMouseDownInput('stiffness', i)"
+          @change="handleChange('stiffness', i, $event)">
+        <input
+          :min="0"
+          :max="40"
+          :value="damping(j)"
+          type="range"
+          @mousedown="handleMouseDownInput('damping', j)"
+          @change="handleChange('damping', j, $event)" >
+        <Motion :now-style="motionStyle(i, j)">
+          <template slot-scope="props">
+            <div
+              :style="{
+                transform: `translate3d(${props.x}px, ${props.y}px, 0)`,
+                WebkitTransform: `translate3d(${props.x}px, ${props.y}px, 0)`,
+              }"
+              :class="'demo5-ball ' + (lastPressed[0] === i && lastPressed[1] === j ? 'demo5-ball-active' : '')"
+              @mousedown="handleMouseDown([i, j], [props.x, props.y], $event)"
+              @touchstart="handleTouchStart([i, j], [props.x, props.y])">
+              <div class="demo5-preset">
+                {{ stiffness(i) }}
+                <template v-if="slider.dragged === 'stiffness'">
+                  <div
+                    v-if="i < slider.num"
+                    class="demo5-minus">
+                    -{{ (slider.num - i) * 30 }}
+                  </div>
+                  <div
+                    v-else-if="i > slider.num"
+                    class="demo5-plus">
+                    +{{ (i - slider.num) * 30 }}
+                  </div>
+                  <div
+                    v-else
+                    class="demo5-plus">
+                    0
+                  </div>
+                </template>
+              </div>
+              <div class="demo5-preset">
+                {{ damping(j) }}
+                <template v-if="slider.dragged !== 'stiffness'">
+                  <div
+                    v-if="j < slider.num"
+                    class="demo5-minus">
+                    -{{ (slider.num - j) * 2 }}
+                  </div>
+                  <div
+                    v-else-if="j > slider.num"
+                    class="demo5-plus">
+                    +{{ (j - slider.num) * 2 }}
+                  </div>
+                  <div
+                    v-else
+                    class="demo5-plus">
+                    0
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </Motion>
+      </div>
+    </template>
   </div>
 </template>
 
 
 <script>
 import { spring, Motion } from '../../package/index.js'
-import range from 'lodash.range';
-const gridWidth = 150;
-const gridHeight = 150;
-const grid = range(4).map(() => range(6));
+import range from 'lodash.range'
+const gridWidth = 150
+const gridHeight = 150
+const grid = range(4).map(() => range(6))
 export default {
+  components: {
+    Motion
+  },
   data () {
     return {
       delta: [0, 0],
@@ -58,6 +105,7 @@ export default {
 
   },
   mounted () {
+    console.log(this.$route.query)
     window.addEventListener('mousemove', this.handleMouseMove)
     window.addEventListener('touchmove', this.handleTouchMove)
     window.addEventListener('mouseup', this.handleMouseUp)
@@ -74,7 +122,7 @@ export default {
       this.lastPressed = pos
     },
     handleTouchMove (e) {
-      if (this.state.isPressed) {
+      if (this.isPressed) {
         e.preventDefault()
       }
       this.handleMouseMove(e.touches[0])
@@ -103,25 +151,25 @@ export default {
     },
     cellStyle (i, j) {
       return {
-        top: gridHeight * i,
-        left: gridWidth * j,
-        width: gridWidth,
-        height: gridHeight,
+        top: gridHeight * i + 'px',
+        left: gridWidth * j + 'px',
+        width: gridWidth + 'px',
+        height: gridHeight + 'px',
       }
     },
     stiffness (i) {
-      return this.firstConfig.s0 + i * 30
+      return this.firstConfig[0] + i * 30
     },
     damping (j) {
-      return this.firstConfig.d0 + j * 30
+      return this.firstConfig[1] + j * 2
     },
     motionStyle (i, j) {
       return this.isPressed
-        ? {x: mouse[0], y: mouse[1]}
+        ? {x: this.mouse[0], y: this.mouse[1]}
         : {
-            x: spring(gridWidth / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
-            y: spring(gridHeight / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
-          };
+          x: spring(gridWidth / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
+          y: spring(gridHeight / 2 - 25, {stiffness:this.stiffness(i), damping: this.damping(j)}),
+        }
     }
   }
 }
