@@ -102,10 +102,19 @@ export default {
     }
   },
   computed: {
-
+    stiffness () {
+      return function (i) {
+        return this.firstConfig[0] + i * 30
+      }
+    },
+    damping () {
+      const firstConfig = this.firstConfig
+      return function (j) {
+        return firstConfig[1] + j * 2
+      }
+    },
   },
   mounted () {
-    console.log(this.$route.query)
     window.addEventListener('mousemove', this.handleMouseMove)
     window.addEventListener('touchmove', this.handleTouchMove)
     window.addEventListener('mouseup', this.handleMouseUp)
@@ -139,6 +148,7 @@ export default {
       this.slider = {dragged: null, num: 0}
     },
     handleChange (constant, num, {target}) {
+      console.log(target.value)
       const {firstConfig: [s, d]} = this
       if (constant === 'stiffness') {
         this.firstConfig = [target.value - num * 30, d]
@@ -156,12 +166,6 @@ export default {
         width: gridWidth + 'px',
         height: gridHeight + 'px',
       }
-    },
-    stiffness (i) {
-      return this.firstConfig[0] + i * 30
-    },
-    damping (j) {
-      return this.firstConfig[1] + j * 2
     },
     motionStyle (i, j) {
       return this.isPressed
