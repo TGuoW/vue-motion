@@ -3,7 +3,9 @@
     :default-styles="range(6).map(() => ({x: 0, y: 0}))"
     :styles="getStyles">
     <template slot-scope="props">
-      <div class="demo1">
+      <div
+        ref="stage"
+        class="demo1">
         <div
           v-for="(item, i) in props"
           :key="i"
@@ -28,10 +30,15 @@ export default {
   data () {
     return {
       x: 250,
-      y: 300
+      y: 300,
+      offsetTop: 0,
+      offsetLeft: 0
     }
   },
   mounted () {
+    const {offsetLeft, offsetTop} = this.$refs.stage
+    this.offsetLeft = offsetLeft
+    this.offsetTop = offsetTop
     window.addEventListener('mousemove', this.handleMouseMove)
     window.addEventListener('touchmove', this.handleTouchMove)
   },
@@ -41,8 +48,8 @@ export default {
       this.handleMouseMove(touches[0])
     },
     handleMouseMove ({pageX: x, pageY: y}) {
-      this.x = x
-      this.y = y
+      this.x = x - this.offsetLeft
+      this.y = y - this.offsetTop
     },
     getStyles (prevStyles) {
     // `prevStyles` is the interpolated value of the last tick

@@ -148,7 +148,6 @@ export default {
       this.slider = {dragged: null, num: 0}
     },
     handleChange (constant, num, {target}) {
-      console.log(target.value)
       const {firstConfig: [s, d]} = this
       if (constant === 'stiffness') {
         this.firstConfig = [target.value - num * 30, d]
